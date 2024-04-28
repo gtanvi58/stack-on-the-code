@@ -1,0 +1,45 @@
+body {
+    font-family: sans-serif;
+    margin: 5%;
+}
+
+h1 {
+    text-align:center;
+}
+
+.signup-text {
+    text-align: center;
+}
+
+.form {
+    align-content: center;
+    width: 50%;
+    margin: auto;
+}
+
+
+.form--input {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form--button {
+    width: 100%;
+    background-color: orange;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    
+}
+
+.form--button:hover{
+    background-color: darkorange;
+}
