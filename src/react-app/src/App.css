@@ -1,25 +1,73 @@
 body {
     font-family: sans-serif;
-    margin: 5%;
+    margin: 0;
 }
 
 h1 {
     text-align:center;
+    padding: 10px;
 }
+
+h2{
+    text-align: left;
+    margin-left: 40px;
+}
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: gray;
+    height: 40px;
+    padding: 20px 36px;
+    box-shadow: 0px 2.98256px 7.4564px rgba(0, 0, 0, 0.3);
+}
+
+.nav--title {
+    color: white;
+    font-weight: 600;
+    padding: 5px;
+}
+
+.nav--items {
+    list-style: none;
+    display: flex;
+    color: white;
+}
+
+.nav--items > li {
+    padding: 10px;
+}
+
 
 .signup-text {
     text-align: center;
 }
 
+.signup-info-text{
+    text-align: center;
+}
+
 .form {
     align-content: center;
-    width: 50%;
+    width: 75%;
     margin: auto;
 }
 
 
 .form--input {
     width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.input-long {
+    width: 90%;
+    height: 15%;
     padding: 12px 20px;
     margin: 8px 0;
     display: inline-block;
@@ -41,5 +89,42 @@ h1 {
 }
 
 .form--button:hover{
+    background-color: darkorange;
+}
+
+.main-content{
+    font-family: sans-serif;
+    align-content: center;
+    width: 90%;
+    margin: auto;
+    padding: 10px;
+    text-align: center;
+}
+
+.instructions{
+    width: 90%;
+    text-align: left;
+}
+
+.instructions--text{
+    margin-left: 45px;
+}
+
+.error-search-form{
+    width: 90%;
+}
+
+.error-search--button{
+    width: 90%;
+    background-color: orange;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.error-search--button:hover{
     background-color: darkorange;
 }
