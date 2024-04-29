@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import Report from "./Report";
+import Login from './Login';
 
 function Main(){
 
     const [showMain, setShowMain] = useState(true);
     const [showReport, setShowReport] = useState(false);
+    
 
     function loadReport(){
         setShowReport(!showReport);

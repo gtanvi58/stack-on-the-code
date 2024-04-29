@@ -9,3 +9,5 @@ function ErrorHistory(props){
 }
 
 export default ErrorHistory;
+
+//should be a link brings up the whole report or drop down with the summary and api response
