@@ -12,7 +12,7 @@ function Signup(){
     }
     return (
         <div>
-            {showSignup && <div id = "signup-form">
+            {showSignup && <div className = "signup-form">
                 <h1> Welcome to Stack On The Code </h1>
                 <p className='signup-info-text'> Easier debugging and code help is just a few clicks away! Enter a username and password to create your account. </p>
                 <form className='form'>
