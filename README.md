@@ -4,3 +4,4 @@ StackOnTheCode is a VS Code extension to generate code/error summaries using dat
 ### Installation Instructions
 ### Configuration
 ### Datasets used by LLM
+We used datasets from CodeXGlue (https://github.com/microsoft/CodeXGLUE) and the LLM we used is DistilBART (https://huggingface.co/sshleifer/distilbart-cnn-12-6).
