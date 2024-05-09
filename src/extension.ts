@@ -1,13 +1,26 @@
 import * as vscode from 'vscode';
 import { subscribeToDocumentChanges, EMOJI_MENTION } from './diagnostics';
 import axios from 'axios';
+import {exec} from 'child_process'
+const { spawn } = require('child_process');
+const { readFile } = require('fs/promises');
+const { spawnSync } = require('child_process');
+const path = require('path');
+
+const currentDir = __dirname;
+const desiredDir = path.join(currentDir, '../src');
+const scriptPath = path.join(desiredDir, 'check.py');
+console.log("printing cwd ", scriptPath)
 
 const COMMAND_INFO = 'stack-on-the-code.onGetInfo';
-const COMMAND_ERROR = 'code-actions-sample.onGetError';
+const COMMAND_ERROR = 'stack-on-the-code.onGetError';
+const COMMAND_LOGIN = 'stack-on-the-code.onLogin';
+const COMMAND_HISTORY = 'stack-on-the-code.onGetHistory';
 
 let infoLine = '';
 let errorLine = ''
 let diagnostics: vscode.Diagnostic[] = [];
+let hasUserLoggedIn = true;
 
 const stackExchangeGet = (highlighted: String, isError: Boolean) => {
     let query = highlighted;
@@ -21,7 +34,7 @@ const stackExchangeGet = (highlighted: String, isError: Boolean) => {
     console.log("printing query ", query)
     axios.get(`https://api.stackexchange.com/2.3/similar?order=desc&sort=relevance&title=${query}&site=stackoverflow`)
     .then((response) => {
-        console.log("Response:", response.data.items);
+        // console.log("Response:", response.data.items);
 
         // Extract accepted answer IDs
         // const acceptedAnswerIds = response.data.items.map((item: any) => item.accepted_answer_id).filter((id: any) => id !== undefined);
@@ -40,8 +53,8 @@ const questions = response.data.items
 
 
         axios.get(`https://api.stackexchange.com/2.3/answers/${answerIdsString}?order=desc&sort=votes&site=stackoverflow&filter=withbody`)
-            .then((response) => {
-                console.log("Answers:", response.data.items);
+            .then(async (response) => {
+                // console.log("Answers:", response.data.items);
                 const panel = vscode.window.createWebviewPanel(
                     'apiResults', // Identifies the type of the webview. Used internally
                     'API Results', // Title of the panel displayed to the user
@@ -65,28 +78,62 @@ const questions = response.data.items
                                     <ul>
                                 `;
 
-                                console.log("printing question length ", questions.length)
-                                console.log("printing answer length ", response.data.items.length)
+                                // console.log("printing question length ", questions.length)
+                                // console.log("printing answer length ", response.data.items.length)
 
+                                const sendToLLM: any[] = [];
+                                const questionsArray = [];
                                 questions.forEach((questionItem: any) => {
                                     if(questionItem.accepted_answer_id){
-                                        htmlContent += `<li>${questionItem.title}</li>`; // Display the question title
-                                        console.log("printing question item", questionItem)
+                                      questionsArray.push(questionItem.title)
+                                        // console.log("printing question item", questionItem)
                                     
-                                        // Find response for this question
                                         const matchingResponse = response.data.items.find((responseItem: any) => {
-                                            console.log("printing answer item ", responseItem)
+                                            // console.log("printing answer item ", responseItem)
                                             return responseItem.answer_id === questionItem.accepted_answer_id;
                                         });
                                     
                                         if (matchingResponse) {
-                                            htmlContent += `<ol>${matchingResponse.body}</ol>`; // Display the response content
+                                            sendToLLM.push(matchingResponse.toString())
+                                          
+                          
                                         }
+
+                                        
                                     }
                                    
                                 });
-                                
-                panel.webview.html = htmlContent;
+
+                                const pythonProcess = await spawnSync('python3', [
+                                  scriptPath,
+                                  'first_function',
+                                  sendToLLM,
+                                  `${desiredDir}/results.json`
+                                ]);
+
+                                console.log("printing path ", `${desiredDir}/results.json`)
+
+                                const result = pythonProcess.stdout?.toString()?.trim();
+                                console.log("printing in node js ", result);
+                                // // result.forEach((res: any) =>{
+                                // //   console.log("printing item ", JSON.stringify(res));
+                                // // })
+                                const error = pythonProcess.stderr?.toString()?.trim();
+
+                                // const status = result === 'OK';
+                let resultParsed = []
+  // if (status) {
+    const buffer = await readFile( `${desiredDir}/results.json`);
+    resultParsed = JSON.parse(buffer?.toString());
+    console.log("printing parsed node ", resultParsed)
+  // } else {
+  //   console.log(error)
+  // }
+
+  // htmlContent += `<li>${questionItem.title}</li>`; // Display the question title
+
+  // htmlContent += `<ol>${matchingResponse.body}</ol>`;
+                                panel.webview.html = htmlContent;
             })
             .catch((error) => {
                 console.error("Error fetching answers:", error);
@@ -97,6 +144,86 @@ const questions = response.data.items
     });
     
 }
+
+const displayHistory = () => {
+    const panel = vscode.window.createWebviewPanel(
+        'history', // Identifies the type of the webview. Used internally
+        'History of Past Summaries', // Title of the panel displayed to the user
+        vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
+        {}
+    );
+    let htmlContent = `<html>
+    <head>
+      <title>Stack On The Code</title>
+      <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" />
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+      <link rel="stylesheet" type="text/css" href="./history.css" />
+    </head>
+    <body>
+      <header>
+        <nav class="nav">
+          <h1 class="nav--title">Stack On The Code</h1>
+        </nav>
+      </header>
+      <h1 class="history-title">History</h1>
+      <div class="history-header">
+        <hr class="rounded">
+      </div>
+      <div class="history-content">
+        <div class="columns container" id="history-container">
+          <div class="row">
+            <div class="col">
+              <h4>User Prompt</h4>
+            </div>
+            <div class="col">
+              <h4>Stack Overflow Question</h4>
+            </div>
+            <div class="col">
+              <h4>Answer</h4>
+            </div>
+          </div>
+        </div>
+        <div class="error container">
+          <div class="row">
+            <div class="col">
+              <p>example</p>
+            </div>
+            <div class="col">
+              <p>example</p>
+            </div>
+            <div class="col">
+              <p>example</p>
+            </div>
+          </div>
+        </div>
+        <button onclick="addRow()">Add Row</button>
+      </div>
+      
+      <script>
+        function addRow() {
+          var container = document.getElementById('error container');
+          var newRow = document.createElement('div');
+          newRow.className = 'row';
+          newRow.innerHTML = \`
+            <div class="col">
+              <h4>New User Prompt</h4>
+            </div>
+            <div class="col">
+              <h4>New Stack Overflow Question</h4>
+            </div>
+            <div class="col">
+              <h4>New Answer</h4>
+            </div>\`;
+          container.appendChild(newRow);
+        }
+      </script>
+    </body>
+    </html>
+    `
+
+panel.webview.html = htmlContent;
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider('*', new Emojizer(), {
@@ -133,6 +260,12 @@ export function activate(context: vscode.ExtensionContext) {
             else{
                 vscode.window.showErrorMessage('Select text to get more error diagnostics');
             }
+        })
+	);
+
+    context.subscriptions.push(
+		vscode.commands.registerCommand(COMMAND_HISTORY, () => {
+           displayHistory();
         })
 	);
 
@@ -190,13 +323,14 @@ export class Emojizer implements vscode.CodeActionProvider {
 	public provideCodeActions(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction[] | undefined {
             console.log("inside code actions")
 
+        const commandStack = [];
 		const commandActionInfo = this.createCommandInfo();
         const commandActionError = this.createCommandError();
+        const commandActionHistory = this.createCommandHistory();
+        const commandLogin = this.createCommandLogin();
+        hasUserLoggedIn? commandStack.push(commandActionInfo, commandActionError, commandActionHistory) : commandStack.push(commandLogin);
 
-		return [
-			commandActionInfo,
-            commandActionError
-		];
+		return commandStack;
 	}
 
 	private createCommandInfo(): vscode.CodeAction {
@@ -206,8 +340,20 @@ export class Emojizer implements vscode.CodeActionProvider {
 	}
 
     private createCommandError(): vscode.CodeAction {
-		const action = new vscode.CodeAction('Get error fixes', vscode.CodeActionKind.Empty);
+		const action = new vscode.CodeAction('Get Error Fixes', vscode.CodeActionKind.Empty);
 		action.command = { command: COMMAND_ERROR, title: 'Learn more about error', tooltip: 'This will display more error info'}
+		return action;
+	}
+
+    private createCommandHistory(): vscode.CodeAction {
+		const action = new vscode.CodeAction('View History of Past Summaries', vscode.CodeActionKind.Empty);
+		action.command = { command: COMMAND_HISTORY, title: 'History', tooltip: 'This will allow you to view the past summaries'}
+		return action;
+	}
+
+    private createCommandLogin(): vscode.CodeAction {
+		const action = new vscode.CodeAction('Login to get Diagnostic Information About Your Code.', vscode.CodeActionKind.Empty);
+		action.command = { command: COMMAND_LOGIN, title: 'Login', tooltip: 'This will take you to the login page.'}
 		return action;
 	}
 }
