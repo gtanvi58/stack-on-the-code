@@ -6,6 +6,7 @@ const { spawn } = require('child_process');
 const { readFile } = require('fs/promises');
 const { spawnSync } = require('child_process');
 const path = require('path');
+const fsPromises = require('fs').promises;
 
 const currentDir = __dirname;
 const desiredDir = path.join(currentDir, '../src');
@@ -53,7 +54,7 @@ const questions = response.data.items
 
 
         axios.get(`https://api.stackexchange.com/2.3/answers/${answerIdsString}?order=desc&sort=votes&site=stackoverflow&filter=withbody`)
-            .then(async (response) => {
+            .then((response) => {
                 // console.log("Answers:", response.data.items);
                 const panel = vscode.window.createWebviewPanel(
                     'apiResults', // Identifies the type of the webview. Used internally
@@ -82,10 +83,14 @@ const questions = response.data.items
                                 // console.log("printing answer length ", response.data.items.length)
 
                                 const sendToLLM: any[] = [];
-                                const questionsArray = [];
-                                questions.forEach((questionItem: any) => {
+                                let summaryArray: any[] = [];
+                                let count = 0;
+                                let questionsArray: any[] = [];
+                                let c=0;
+
+                                questions.forEach(async (questionItem: any) => {
                                     if(questionItem.accepted_answer_id){
-                                      questionsArray.push(questionItem.title)
+
                                         // console.log("printing question item", questionItem)
                                     
                                         const matchingResponse = response.data.items.find((responseItem: any) => {
@@ -93,9 +98,71 @@ const questions = response.data.items
                                             return responseItem.answer_id === questionItem.accepted_answer_id;
                                         });
                                     
-                                        if (matchingResponse) {
-                                            sendToLLM.push(matchingResponse.toString())
+                                        if (matchingResponse && count<3) {
+                                          questionsArray.push(questionItem.title)
+                                          count++;
+                                            // htmlContent += `<li>${questionItem.title}</li>`; // Display the question title
+
+                                          // console.log("printing type of matching response ", JSON.stringify(matchingResponse))
+                                          const pythonProcess = await spawnSync('python3', [
+                                            scriptPath,
+                                            'first_function',
+                                            JSON.stringify(matchingResponse),
+                                            `${desiredDir}/results.json`
+                                          ]);
+          
+                                          console.log("printing path ", `${desiredDir}/results.json`)
+          
+                                          const result = pythonProcess.stdout?.toString()?.trim();
                                           
+
+// Using substring
+let finalRes = result.substring(result.indexOf("full summary:") + "full summary:".length);
+summaryArray.push(finalRes);
+if(summaryArray.length >= 3){
+  let index = 0;
+  questionsArray.forEach((q:any) => {
+    // let r = summaryArray[0]; // Get the corresponding answer
+    console.log("printing inside for each answer ", summaryArray[0])
+    // Construct HTML content for question and answer pair
+    htmlContent += `<li>${q}</li>`;
+    htmlContent += `<ol>${summaryArray[index]}</ol>`;
+    index++;
+});
+panel.webview.html = htmlContent;
+
+}
+
+console.log("printing summary array ", summaryArray[0])
+
+// // htmlContent += `<ol>${finalRes}</ol>`;
+
+// // Using slice
+// // let result = inputString.slice(inputString.indexOf("full summary:") + "full summary:".length);
+
+// // Using regular expression
+// // let result = inputString.match(/full summary:(.*)/)[1];
+
+// console.log(result.trim());
+//                                           console.log("printing in node js ", result);
+//                                           // // result.forEach((res: any) =>{
+//                                           // //   console.log("printing item ", JSON.stringify(res));
+//                                           // // })
+//                                           const error = pythonProcess.stderr?.toString()?.trim();
+          
+//                                           // const status = result === 'OK';
+//                           let resultParsed = []
+//             // if (status) {
+//               // const buffer = await readFile( `${desiredDir}/results.json`);
+//               // resultParsed = JSON.parse(buffer?.toString());
+//               // console.log("printing parsed node ", resultParsed)
+//             // } else {
+//             //   console.log(error)
+//             // }
+//                                             sendToLLM.push(JSON.stringify(matchingResponse))
+//                         //                     fsPromises.writeFile('./answers.json', JSON.stringify(matchingResponse))
+//                         // .then(  () => { console.log('Append Success'); })
+//                         // .catch((err: any) => { console.log("Append Failed: "+err);});
                           
                                         }
 
@@ -103,37 +170,9 @@ const questions = response.data.items
                                     }
                                    
                                 });
+                        
 
-                                const pythonProcess = await spawnSync('python3', [
-                                  scriptPath,
-                                  'first_function',
-                                  sendToLLM,
-                                  `${desiredDir}/results.json`
-                                ]);
 
-                                console.log("printing path ", `${desiredDir}/results.json`)
-
-                                const result = pythonProcess.stdout?.toString()?.trim();
-                                console.log("printing in node js ", result);
-                                // // result.forEach((res: any) =>{
-                                // //   console.log("printing item ", JSON.stringify(res));
-                                // // })
-                                const error = pythonProcess.stderr?.toString()?.trim();
-
-                                // const status = result === 'OK';
-                let resultParsed = []
-  // if (status) {
-    const buffer = await readFile( `${desiredDir}/results.json`);
-    resultParsed = JSON.parse(buffer?.toString());
-    console.log("printing parsed node ", resultParsed)
-  // } else {
-  //   console.log(error)
-  // }
-
-  // htmlContent += `<li>${questionItem.title}</li>`; // Display the question title
-
-  // htmlContent += `<ol>${matchingResponse.body}</ol>`;
-                                panel.webview.html = htmlContent;
             })
             .catch((error) => {
                 console.error("Error fetching answers:", error);
