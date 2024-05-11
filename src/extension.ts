@@ -354,6 +354,10 @@ function createLoginWebview() {
           let email = message.email;
           let password = message.password;
           await loginCommand(email, password);
+        case 'signUp':
+          let email2 = message.email;
+          let password2 = message.password;
+          await signUpCommand(email2, password2);
       }
     }
   )
@@ -361,9 +365,16 @@ function createLoginWebview() {
   panel.webview.html = sampleHtml;
 }
 
+const signUpCommand = async (email: string, password: string) => {
+  const {data, error} = await supabase.auth.signUp({
+    email: email,
+    password: password
+  })
+}
+
 const loginCommand = async (email: string, password: string) => {
   console.log("logging in")
-  const {data, error} = await supabase.auth.signUp({
+  const {data, error} = await supabase.auth.signInWithPassword({
     email: email,
     password: password
   })
@@ -376,6 +387,13 @@ export function activate(context: vscode.ExtensionContext) {
       createLoginWebview();
     })
   );
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event == 'SIGNED_IN') {
+      console.log("User is signed in");
+      hasUserLoggedIn = true;
+    }
+  });
 
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider('*', new Emojizer(), {
