@@ -366,10 +366,22 @@ function createLoginWebview() {
 }
 
 const signUpCommand = async (email: string, password: string) => {
+  console.log("sign UP function called")
+  try{
   const {data, error} = await supabase.auth.signUp({
     email: email,
     password: password
   })
+  if (error) {
+    console.log("printing error ", error)
+  }
+  else{
+    console.log("printing data ", data)
+  }
+}
+  catch(e){
+    console.log("printing error ", e)
+  }
 }
 
 const loginCommand = async (email: string, password: string) => {
@@ -392,6 +404,9 @@ export function activate(context: vscode.ExtensionContext) {
     if (event == 'SIGNED_IN') {
       console.log("User is signed in");
       hasUserLoggedIn = true;
+    }
+    else if (event == 'USER_UPDATED') {
+      console.log("User is updated");
     }
   });
 
