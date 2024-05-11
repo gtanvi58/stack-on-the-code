@@ -31,8 +31,8 @@ const COMMAND_HISTORY = 'stack-on-the-code.onGetHistory';
 let infoLine = '';
 let errorLine = ''
 let diagnostics: vscode.Diagnostic[] = [];
-let hasUserLoggedIn = true;
-
+let hasUserLoggedIn = false;
+let identity: string | undefined = '';
 
 
 const stackExchangeGet = (highlighted: String, isError: Boolean) => {
@@ -139,6 +139,7 @@ if(summaryArray.length >= 3){
     // Construct HTML content for question and answer pair
     htmlContent += `<li>${q}</li>`;
     htmlContent += `<ol>${summaryArray[index]}</ol>`;
+    insertIntoDB(query as string, q as string, summaryArray[index] as string);
     index++;
 });
 panel.webview.html = htmlContent;
@@ -146,7 +147,14 @@ panel.webview.html = htmlContent;
 }
 
 console.log("printing summary array ", summaryArray[0])
+/*
+const {data, error} = await supabase.from('summaries')
+.insert(
+  {user_name: identity as string,
+    prompt: query as string,
 
+  }
+)*/
 // // htmlContent += `<ol>${finalRes}</ol>`;
 
 // // Using slice
@@ -196,13 +204,42 @@ console.log("printing summary array ", summaryArray[0])
     
 }
 
+const insertIntoDB = async (query: string, question: string, answer: string) => {
+  const {data, error} = await supabase.from('summaries')
+  .insert(
+    {user_name: identity as string,
+      prompt: query as string,
+      question: question as string,
+      answer: answer as string
+    }
+  )
+if (error) {
+  console.log("insertion error ", error)
+}
+}
+
+const getSummaries = async () => {
+  const {data, error} = await supabase.from('summaries')
+  .select('*').filter('user_name', 'eq', identity)
+
+  if (error){
+    console.log("error in getting summaries")
+  }
+  else{
+    console.log("printing data ", data)
+  }
+  return data;
+}
+
 const displayHistory = () => {
+    let summaries = getSummaries();
     const panel = vscode.window.createWebviewPanel(
         'history', // Identifies the type of the webview. Used internally
         'History of Past Summaries', // Title of the panel displayed to the user
         vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
         {}
     );
+
     let htmlContent = `<html>
     <head>
       <title>Stack On The Code</title>
@@ -286,11 +323,13 @@ function createLoginWebview() {
   );
 
   let sampleHtml = 
-  `<form id="loginForm">
+  
+  `<h1>Login</h1>
+  <form id="loginForm">
 
     <div class="container">
-      <label for="uname"><b>Username</b></label>
-      <input type="text" placeholder="Enter Username" name="uname" required>
+      <label for="uname"><b>Email</b></label>
+      <input type="text" placeholder="Enter Email" name="uname" required>
 
       <label for="psw"><b>Password</b></label>
       <input type="password" placeholder="Enter Password" name="psw" required>
@@ -302,8 +341,8 @@ function createLoginWebview() {
   <form id="SignUpForm">
 
     <div class="container">
-      <label for="uname2"><b>Username</b></label>
-      <input type="text" placeholder="Enter Username" name="uname2" required>
+      <label for="uname2"><b>Email</b></label>
+      <input type="text" placeholder="Enter Email" name="uname2" required>
 
       <label for="psw2"><b>Password</b></label>
       <input type="password" placeholder="Enter Password" name="psw2" required>
@@ -348,7 +387,7 @@ function createLoginWebview() {
 
   panel.webview.onDidReceiveMessage(
     async message => {
-      console.log(message)
+      //console.log(message)
       switch (message.command) {
         case 'login':
           let email = message.email;
@@ -366,26 +405,20 @@ function createLoginWebview() {
 }
 
 const signUpCommand = async (email: string, password: string) => {
-  console.log("sign UP function called")
+  //console.log("sign UP function called")
   try{
   const {data, error} = await supabase.auth.signUp({
     email: email,
     password: password
   })
-  if (error) {
-    console.log("printing error ", error)
   }
-  else{
-    console.log("printing data ", data)
-  }
-}
   catch(e){
     console.log("printing error ", e)
   }
 }
 
 const loginCommand = async (email: string, password: string) => {
-  console.log("logging in")
+  //console.log("logging in")
   const {data, error} = await supabase.auth.signInWithPassword({
     email: email,
     password: password
@@ -400,13 +433,15 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  supabase.auth.onAuthStateChange((event, session) => {
+  supabase.auth.onAuthStateChange(async (event, session) => {
     if (event == 'SIGNED_IN') {
       console.log("User is signed in");
       hasUserLoggedIn = true;
+      identity = await (await supabase.auth.getUser()).data.user?.id;
+      console.log("printing identity ", identity)
     }
     else if (event == 'USER_UPDATED') {
-      console.log("User is updated");
+      //console.log("User is updated");
     }
   });
 
@@ -513,7 +548,7 @@ export class Emojizer implements vscode.CodeActionProvider {
         const commandActionError = this.createCommandError();
         const commandActionHistory = this.createCommandHistory();
         const commandLogin = this.createCommandLogin();
-        hasUserLoggedIn? commandStack.push(commandActionInfo, commandActionError, commandActionHistory, commandLogin) : commandStack.push(commandLogin);
+        hasUserLoggedIn? commandStack.push(commandActionInfo, commandActionError, commandActionHistory) : commandStack.push(commandLogin);
 
 		return commandStack;
 	}
