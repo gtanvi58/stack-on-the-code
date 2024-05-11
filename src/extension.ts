@@ -7,6 +7,16 @@ const { readFile } = require('fs/promises');
 const { spawnSync } = require('child_process');
 const path = require('path');
 const fsPromises = require('fs').promises;
+import {createClient} from '@supabase/supabase-js'
+import { Auth } from '@supabase/ui';
+
+
+const supabaseUrl = 'https://zlenezbwfqcoawbssfed.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZW5lemJ3ZnFjb2F3YnNzZmVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTUyNzUzNjIsImV4cCI6MjAzMDg1MTM2Mn0.pxuJfTh-z3EiJs4ItDVedAN2EGiSHO-KJUYj2FI294Y'
+const supabase = createClient(
+  supabaseUrl,
+  supabaseKey
+)
 
 const currentDir = __dirname;
 const desiredDir = path.join(currentDir, '../src');
@@ -22,6 +32,8 @@ let infoLine = '';
 let errorLine = ''
 let diagnostics: vscode.Diagnostic[] = [];
 let hasUserLoggedIn = true;
+
+
 
 const stackExchangeGet = (highlighted: String, isError: Boolean) => {
     let query = highlighted;
@@ -263,7 +275,108 @@ const displayHistory = () => {
 panel.webview.html = htmlContent;
 }
 
+function createLoginWebview() {
+  const panel = vscode.window.createWebviewPanel(
+    'login', // Identifies the type of the webview. Used internally
+    'Login', // Title of the panel displayed to the user
+    vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+    {
+      enableScripts: true
+    }
+  );
+
+  let sampleHtml = 
+  `<form id="loginForm">
+
+    <div class="container">
+      <label for="uname"><b>Username</b></label>
+      <input type="text" placeholder="Enter Username" name="uname" required>
+
+      <label for="psw"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" name="psw" required>
+
+      <button type="submit">Login</button>
+    </div>
+  </form>
+
+  <form id="SignUpForm">
+
+    <div class="container">
+      <label for="uname2"><b>Username</b></label>
+      <input type="text" placeholder="Enter Username" name="uname2" required>
+
+      <label for="psw2"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" name="psw2" required>
+
+      <button type="submit">SignUp</button>
+    </div>
+  </form>
+
+  <script>
+    const vscode = acquireVsCodeApi();
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(loginForm);
+      const email = formData.get('uname');
+      const password = formData.get('psw');
+      if (email && password) {
+        vscode.postMessage({
+          command: 'login',
+          email,
+          password
+        });
+      }
+    });
+
+    const signUpForm = document.getElementById('SignUpForm');
+    signUpForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(signUpForm);
+      const email = formData.get('uname2');
+      const password = formData.get('psw2');
+      if (email && password) {
+        vscode.postMessage({
+          command: 'signUp',
+          email,
+          password
+        });
+      }
+    });
+  </script>
+  `;
+
+  panel.webview.onDidReceiveMessage(
+    async message => {
+      console.log(message)
+      switch (message.command) {
+        case 'login':
+          let email = message.email;
+          let password = message.password;
+          await loginCommand(email, password);
+      }
+    }
+  )
+
+  panel.webview.html = sampleHtml;
+}
+
+const loginCommand = async (email: string, password: string) => {
+  console.log("logging in")
+  const {data, error} = await supabase.auth.signUp({
+    email: email,
+    password: password
+  })
+}
+
 export function activate(context: vscode.ExtensionContext) {
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(COMMAND_LOGIN, () => {
+      createLoginWebview();
+    })
+  );
+
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider('*', new Emojizer(), {
 			providedCodeActionKinds: Emojizer.providedCodeActionKinds
@@ -367,7 +480,7 @@ export class Emojizer implements vscode.CodeActionProvider {
         const commandActionError = this.createCommandError();
         const commandActionHistory = this.createCommandHistory();
         const commandLogin = this.createCommandLogin();
-        hasUserLoggedIn? commandStack.push(commandActionInfo, commandActionError, commandActionHistory) : commandStack.push(commandLogin);
+        hasUserLoggedIn? commandStack.push(commandActionInfo, commandActionError, commandActionHistory, commandLogin) : commandStack.push(commandLogin);
 
 		return commandStack;
 	}
