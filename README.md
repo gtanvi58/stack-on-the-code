@@ -6,6 +6,8 @@ Demo video link:
 
 ### Installation Instructions
 
+User should have VSCode (https://code.visualstudio.com/download), node.js version 20+ (https://nodejs.org/en/download), and python version 3 (https://www.python.org/downloads/) installed.
+
 git clone https://github.com/gtanvi58/stack-on-the-code.git
 
 cd stack-on-the-code
@@ -34,7 +36,12 @@ In the new window that opens, run command+shift+p -> choose `Developer: Reload W
 
 5. The summaries or the history page should load accordingly. If the code has an error, you can click learn more about error for a mini popup with more info. Otherwise there will be a popup saying "No diagnostics found at the selected line."
    
-6. When a user ends the debug session, they are automatically logged out. 
+6. When a user ends the debug session, they are automatically logged out.
+
+### Test
+Run npm run test
+
+Delete the .vscode-test folder after each test run.
 
 ### Datasets used by LLM
 We used datasets from CodeXGlue (https://github.com/microsoft/CodeXGLUE) and the LLM we used is DistilBART (https://huggingface.co/sshleifer/distilbart-cnn-12-6).
