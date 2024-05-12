@@ -22,7 +22,6 @@
 
 
 ### Ali Naveed
-Files worked on:
 - User authentication
 - Database setup
 - Final integration
