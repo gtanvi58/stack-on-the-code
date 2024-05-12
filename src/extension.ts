@@ -7,7 +7,7 @@ const { readFile } = require('fs/promises');
 const { spawnSync } = require('child_process');
 const path = require('path');
 const fsPromises = require('fs').promises;
-import {createClient} from '@supabase/supabase-js'
+import {createClient} from '@supabase/supabase-js';
 import { Auth } from '@supabase/ui';
 
 
@@ -210,7 +210,7 @@ panel.webview.html = htmlContent;
 
 }
 
-console.log("printing summary array ", summaryArray[0])
+console.log("printing summary array ", summaryArray[0]);
 /*
 const {data, error} = await supabase.from('summaries')
 .insert(
@@ -278,25 +278,26 @@ const insertIntoDB = async (query: string, question: string, answer: string) => 
     }
   )
 if (error) {
-  console.log("insertion error ", error)
+  console.log("insertion error ", error);
 }
-}
+};
 
 const getSummaries = async () => {
   const {data, error} = await supabase.from('summaries')
-  .select('*').filter('user_name', 'eq', identity)
+  .select('*').filter('user_name', 'eq', identity);
 
   if (error){
-    console.log("error in getting summaries")
+    console.log("error in getting summaries");
+    return [];
   }
   else{
-    console.log("printing data ", data)
+    console.log("printing data ", data);
   }
   return data;
-}
+};
 
-const displayHistory = () => {
-    let summaries = getSummaries();
+const displayHistory = async () => {
+    const summaries = await getSummaries();
     const panel = vscode.window.createWebviewPanel(
         'history', // Identifies the type of the webview. Used internally
         'History of Past Summaries', // Title of the panel displayed to the user
@@ -312,70 +313,70 @@ const displayHistory = () => {
     </head>
     <body>
     <style> 
-    html, body {
-      width:100%;
-      height:100%;
-      margin:0;
-      padding:0;
-  }
-    
-    h1 {
-        text-align:center;
-    }
-    
-    h2{
-        text-align: left;
-        margin-left: 40px;
-    }
-    
-    .nav {
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        background-color: #555454;
-        height: 10%;
-        padding: 20px 36px;
-        box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.4);
-        margin-bottom: 30px;
-    }
-    
-    .nav--title {
-        color: white;
-        font-weight: 600;
-    }
-    
-    
-    .history-header{
-        margin: 20px;
-    }
-    
-    .history-title{
-        font-weight: 700;
-        letter-spacing: 3px;
-    }
-    
-    hr.rounded{
-        border-top: 8px solid #bbb;
-        border-radius: 5px;
-        border-color: darkorange;
-    }
-    
-    .columns > h4{
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-    
-    .error{
-        font-family:'Courier New', Courier, monospace;
-    }
-    
-    .container{
-        justify-content: center;
-        max-width:100%;
-    }
-    
-    .col{
-        display: flex;
-        align-items: center; 
-        justify-content: center;
-    }
+        html, body {
+        width:100%;
+        height:100%;
+        margin:0;
+        padding:0;
+        }
+        
+        h1 {
+            text-align:center;
+        }
+        
+        h2{
+            text-align: left;
+            margin-left: 40px;
+        }
+        
+        .nav {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #555454;
+            height: 10%;
+            padding: 20px 36px;
+            box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+        
+        .nav--title {
+            color: white;
+            font-weight: 600;
+        }
+        
+        
+        .history-header{
+            margin: 20px;
+        }
+        
+        .history-title{
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+        
+        hr.rounded{
+            border-top: 8px solid #bbb;
+            border-radius: 5px;
+            border-color: darkorange;
+        }
+        
+        .columns > h4{
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        
+        .error{
+            font-family:'Courier New', Courier, monospace;
+        }
+        
+        .container{
+            justify-content: center;
+            max-width:100%;
+        }
+        
+        .col{
+            display: flex;
+            align-items: center; 
+            justify-content: center;
+        }
   
     </style>
 
@@ -404,12 +405,31 @@ const displayHistory = () => {
           </div>
         </div>
       </div>
-    </body>
-    </html>
     `;
 
-panel.webview.html = htmlContent;
-}
+
+    for(const entry of summaries){
+        htmlContent += `<div class="error container"> `;
+        htmlContent += `<div class="row">`;
+        htmlContent += `<div class="prompt col">`;
+        htmlContent += `<p> ${entry.prompt} </p> `;
+        htmlContent += `</div>`; //close prompt col div
+
+        htmlContent += `<div class="question col">`;
+        htmlContent += `<p> ${entry.question} </p> `;
+        htmlContent += `</div>`; //close question col div
+
+        htmlContent += `<div class="answer col">`;
+        htmlContent += `<p> ${entry.answer} </p> `;
+        htmlContent += `</div>`; //close answer col div
+
+        htmlContent += `</div>`; //close row div
+        htmlContent += `</div>`; //close error div
+    }
+    htmlContent += `</body>`; 
+    htmlContent += `</html>`; 
+    panel.webview.html = htmlContent;
+};
 
 function createLoginWebview() {
   const panel = vscode.window.createWebviewPanel(
@@ -622,13 +642,13 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event == 'SIGNED_IN') {
+    if (event === 'SIGNED_IN') {
       console.log("User is signed in");
       hasUserLoggedIn = true;
       identity = await (await supabase.auth.getUser()).data.user?.id;
       console.log("printing identity ", identity)
     }
-    else if (event == 'USER_UPDATED') {
+    else if (event === 'USER_UPDATED') {
       //console.log("User is updated");
     }
   });
@@ -652,7 +672,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(COMMAND_INFO, () => {
             if(infoLine){
-                stackExchangeGet(infoLine, false)
+                stackExchangeGet(infoLine, false);
             }
             else{
                 vscode.window.showErrorMessage('Select text to get more info');

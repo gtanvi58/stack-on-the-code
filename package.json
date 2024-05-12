@@ -44,6 +44,7 @@
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.43.1",
     "@supabase/ui": "^0.36.5",
-    "axios": "^1.6.8"
+    "axios": "^1.6.8",
+    "supabase": "^1.165.0"
   }
 }
