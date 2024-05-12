@@ -40,4 +40,15 @@ In the new window that opens, run command+shift+p -> choose `Developer: Reload W
 We used datasets from CodeXGlue (https://github.com/microsoft/CodeXGLUE) and the LLM we used is DistilBART (https://huggingface.co/sshleifer/distilbart-cnn-12-6).
 
 ### Additional notes: 
-Due to difficulties with the VSCode extensions webview API and our time constraints, we opted to not use the React framework. We also are no longer using a layered architectural design. However, we are still using the Publisher-Subscriber model for the webviews.
+Due to difficulties with the VSCode extensions webview API and our time constraints, we opted to not use the React framework. We also are no longer using a layered architectural design. However, we are still using the Publisher-Subscriber model for the webviews through the command listeners.
+
+Command Listeners:
+The VS Code API registers listeners for commands triggered by certain user actions. Our extension subscribes to these commands by registering command handlers. In our application, the following commands are triggered:
+
+COMMAND_INFO = 'stack-on-the-code.onGetInfo': Triggered when the user selects the option to get more information about a line of code.
+COMMAND_ERROR = 'stack-on-the-code.onGetError': Triggered when the user selects the option to get more diagnostic information from a line of code that has an error.
+COMMAND_LOGIN = 'stack-on-the-code.onLogin': Triggered when the user successfully logs into the extension.
+COMMAND_HISTORY = 'stack-on-the-code.onGetHistory': Triggered when the user selects the option to retrieve past history of summaries.
+Text Highlighting:
+
+We listen to changes in the active VS Code editor using the onDidChangeTextEditorSelection event listener, which monitors changes in the VS Code editor. If a user highlights text, the extension retrieves that text to make API calls to the StackExchange API.
