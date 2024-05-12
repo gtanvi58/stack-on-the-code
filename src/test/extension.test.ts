@@ -1,15 +1,32 @@
-import * as assert from 'assert';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
+import { strict as assert } from 'assert';
+import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-// import * as myExtension from '../../extension';
+import { COMMAND_INFO, COMMAND_ERROR, COMMAND_HISTORY, COMMAND_LOGIN, stackExchangeGet } from '../extension';
 
-suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+suite('Command Tests', () => {
+    let errorMessageStub: sinon.SinonStub;
 
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
-	});
+    setup(() => {
+        errorMessageStub = sinon.stub(vscode.window, 'showErrorMessage');
+    });
+
+    teardown(() => {
+        errorMessageStub.restore();
+    });
+
+    test('Info Command', async () => {
+        await vscode.commands.executeCommand(COMMAND_INFO);
+        assert(errorMessageStub.calledOnce);
+    });
+
+    test('Error Command', async () => {
+        await vscode.commands.executeCommand(COMMAND_ERROR);
+        assert(errorMessageStub.calledOnce);
+    });
+
+    test('History Command', async () => {
+        const panel = vscode.window.createWebviewPanel('history', 'History of Past Summaries', vscode.ViewColumn.Beside);
+        const expectedTitle = 'History of Past Summaries';
+        assert.equal(panel.title, expectedTitle);
+    });
 });

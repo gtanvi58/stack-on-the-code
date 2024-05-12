@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
 import { subscribeToDocumentChanges, EMOJI_MENTION } from './diagnostics';
 import axios from 'axios';
-import {exec} from 'child_process'
-const { spawn } = require('child_process');
-const { readFile } = require('fs/promises');
 const { spawnSync } = require('child_process');
 const path = require('path');
 const fsPromises = require('fs').promises;
@@ -21,57 +18,46 @@ const supabase = createClient(
 const currentDir = __dirname;
 const desiredDir = path.join(currentDir, '../src');
 const scriptPath = path.join(desiredDir, 'check.py');
-console.log("printing cwd ", scriptPath)
+console.log("printing cwd ", scriptPath);
 
-const COMMAND_INFO = 'stack-on-the-code.onGetInfo';
-const COMMAND_ERROR = 'stack-on-the-code.onGetError';
-const COMMAND_LOGIN = 'stack-on-the-code.onLogin';
-const COMMAND_HISTORY = 'stack-on-the-code.onGetHistory';
+export const COMMAND_INFO = 'stack-on-the-code.onGetInfo';
+export const COMMAND_ERROR = 'stack-on-the-code.onGetError';
+export const COMMAND_LOGIN = 'stack-on-the-code.onLogin';
+export const COMMAND_HISTORY = 'stack-on-the-code.onGetHistory';
 
 let infoLine = '';
-let errorLine = ''
+let errorLine = '';
 let diagnostics: vscode.Diagnostic[] = [];
 //debugging, set this to false to make user login
 let hasUserLoggedIn = false;
 let identity: string | undefined = '';
 
 
-const stackExchangeGet = (highlighted: String, isError: Boolean) => {
+export const stackExchangeGet = (highlighted: String, isError: Boolean) => {
     let query = highlighted;
     if(!isError){
-        query = 'what is '+highlighted
-        infoLine = ''
+        query = 'what is '+highlighted;
+        infoLine = '';
     }
     else{
-        errorLine = ''
+        errorLine = '';
     }
-    console.log("printing query ", query)
+    console.log("printing query ", query);
     axios.get(`https://api.stackexchange.com/2.3/similar?order=desc&sort=relevance&title=${query}&site=stackoverflow`)
     .then((response) => {
-        // console.log("Response:", response.data.items);
-
-        // Extract accepted answer IDs
-        // const acceptedAnswerIds = response.data.items.map((item: any) => item.accepted_answer_id).filter((id: any) => id !== undefined);
-        // const questions = response.data.items.map((item: any) => item.accepted_answer_id).filter((id: any) => id !== undefined);
-
         const acceptedAnswerIds = response.data.items
     .filter((item: any) => item.accepted_answer_id !== undefined) // Filter out items without accepted answers
     .map((item: any) => item.accepted_answer_id); // Map to accepted answer IDs
 
-const questions = response.data.items
-//     .filter((item: any) => item.accepted_answer_id === undefined) // Filter out items with accepted answers
-//     .map((item: any) => item);
-//     console.log("printing questions ", questions)
-
+const questions = response.data.items;
         const answerIdsString = acceptedAnswerIds.join(';');
 
 
         axios.get(`https://api.stackexchange.com/2.3/answers/${answerIdsString}?order=desc&sort=votes&site=stackoverflow&filter=withbody`)
             .then((response) => {
-                // console.log("Answers:", response.data.items);
                 const panel = vscode.window.createWebviewPanel(
                     'apiResults', // Identifies the type of the webview. Used internally
-                    'API Results', // Title of the panel displayed to the user
+                    'Summarized Results', // Title of the panel displayed to the user
                     vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
                     {}
                 );
@@ -156,9 +142,6 @@ const questions = response.data.items
                                     <ul>
                                 `;
 
-                                // console.log("printing question length ", questions.length)
-                                // console.log("printing answer length ", response.data.items.length)
-
                                 const sendToLLM: any[] = [];
                                 let summaryArray: any[] = [];
                                 let count = 0;
@@ -166,21 +149,14 @@ const questions = response.data.items
                                 let c=0;
 
                                 questions.forEach(async (questionItem: any) => {
-                                    if(questionItem.accepted_answer_id){
-
-                                        // console.log("printing question item", questionItem)
-                                    
+                                    if(questionItem.accepted_answer_id){                                    
                                         const matchingResponse = response.data.items.find((responseItem: any) => {
-                                            // console.log("printing answer item ", responseItem)
                                             return responseItem.answer_id === questionItem.accepted_answer_id;
                                         });
                                     
                                         if (matchingResponse && count<3) {
-                                          questionsArray.push(questionItem.title)
+                                          questionsArray.push(questionItem.title);
                                           count++;
-                                            // htmlContent += `<li>${questionItem.title}</li>`; // Display the question title
-
-                                          // console.log("printing type of matching response ", JSON.stringify(matchingResponse))
                                           const pythonProcess = await spawnSync('python3', [
                                             scriptPath,
                                             'first_function',
@@ -188,7 +164,7 @@ const questions = response.data.items
                                             `${desiredDir}/results.json`
                                           ]);
           
-                                          console.log("printing path ", `${desiredDir}/results.json`)
+                                          console.log("printing path ", `${desiredDir}/results.json`);
           
                                           const result = pythonProcess.stdout?.toString()?.trim();
                                           
@@ -199,8 +175,7 @@ summaryArray.push(finalRes);
 if(summaryArray.length >= 3){
   let index = 0;
   questionsArray.forEach((q:any) => {
-    // let r = summaryArray[0]; // Get the corresponding answer
-    console.log("printing inside for each answer ", summaryArray[0])
+    console.log("printing inside for each answer ", summaryArray[0]);
     // Construct HTML content for question and answer pair
     htmlContent += `<li>${q}</li>`;
     htmlContent += `<ol>${summaryArray[index]}</ol>`;
@@ -717,7 +692,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
 		vscode.commands.registerCommand(COMMAND_ERROR, () => {
             if(errorLine){
-                stackExchangeGet(errorLine, true)
+                stackExchangeGet(errorLine, true);
             }
             else{
                 vscode.window.showErrorMessage('Select text to get more error diagnostics');
@@ -736,12 +711,10 @@ export function activate(context: vscode.ExtensionContext) {
     let getHighlightedText = vscode.window.onDidChangeTextEditorSelection(event => {
         console.log("Selection changed");
 
-        // Clear any existing timer
         if (timer !== null) {
             clearTimeout(timer);
         }
 
-        // Start a new timer
         timer = setTimeout(() => {
             console.log("Timer expired");
 
@@ -761,21 +734,18 @@ export function activate(context: vscode.ExtensionContext) {
 
                     if (diagnosticsAtLine.length > 0) {
                         errorLine = diagnosticsAtLine.map(diagnostic => diagnostic.message).join('\n');
-                        console.log("printing error ", errorLine)
+                        console.log("printing error ", errorLine);
                     } else {
                         vscode.window.showInformationMessage('No diagnostics found at the selected line.');
                     }
                 }
             }
-        }, 1000); // Adjust the delay (in milliseconds) as needed
+        }, 1000);
     });
 
     context.subscriptions.push(getHighlightedText);
 }
 
-/**
- * Provides code actions for converting :) to a smiley emoji.
- */
 export class Emojizer implements vscode.CodeActionProvider {
 
 	public static readonly providedCodeActionKinds = [
@@ -783,7 +753,7 @@ export class Emojizer implements vscode.CodeActionProvider {
 	];
 
 	public provideCodeActions(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction[] | undefined {
-            console.log("inside code actions")
+            console.log("inside code actions");
 
         const commandStack = [];
 		const commandActionInfo = this.createCommandInfo();
@@ -803,26 +773,23 @@ export class Emojizer implements vscode.CodeActionProvider {
 
     private createCommandError(): vscode.CodeAction {
 		const action = new vscode.CodeAction('Get Error Fixes', vscode.CodeActionKind.Empty);
-		action.command = { command: COMMAND_ERROR, title: 'Learn more about error', tooltip: 'This will display more error info'}
+		action.command = { command: COMMAND_ERROR, title: 'Learn more about error', tooltip: 'This will display more error info'};
 		return action;
 	}
 
     private createCommandHistory(): vscode.CodeAction {
 		const action = new vscode.CodeAction('View History of Past Summaries', vscode.CodeActionKind.Empty);
-		action.command = { command: COMMAND_HISTORY, title: 'History', tooltip: 'This will allow you to view the past summaries'}
+		action.command = { command: COMMAND_HISTORY, title: 'History', tooltip: 'This will allow you to view the past summaries'};
 		return action;
 	}
 
     private createCommandLogin(): vscode.CodeAction {
 		const action = new vscode.CodeAction('Login to get Diagnostic Information About Your Code.', vscode.CodeActionKind.Empty);
-		action.command = { command: COMMAND_LOGIN, title: 'Login', tooltip: 'This will take you to the login page.'}
+		action.command = { command: COMMAND_LOGIN, title: 'Login', tooltip: 'This will take you to the login page.'};
 		return action;
 	}
 }
 
-/**
- * Provides code actions corresponding to diagnostic problems.
- */
 export class Emojinfo implements vscode.CodeActionProvider {
 
 	public static readonly providedCodeActionKinds = [
