@@ -7,7 +7,7 @@ const { readFile } = require('fs/promises');
 const { spawnSync } = require('child_process');
 const path = require('path');
 const fsPromises = require('fs').promises;
-import {createClient} from '@supabase/supabase-js'
+import {createClient} from '@supabase/supabase-js';
 import { Auth } from '@supabase/ui';
 
 
@@ -82,12 +82,76 @@ const questions = response.data.items
                                     <meta charset="UTF-8">
                                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                                     <title>API Results</title>
+                                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" />
+                                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
                                     <style>
-                                        /* Add your CSS styles here */
+                                    html, body {
+                                    width:100%;
+                                    height:100%;
+                                    margin:0;
+                                    padding:0;
+                                    background-color: white;
+                                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                                    }
+                                    
+                                    h1 {
+                                        text-align:center;
+                                        color: black;
+                                    }
+                                    
+                                    h2{
+                                        text-align: left;
+                                        margin-left: 40px;
+                                        color: black;
+                                        font-weight: 700px;
+                                    }
+                                    
+                                    li{
+                                        text-align: left;
+                                        margin-left: 40px;
+                                        color: black;
+                                    }
+
+                                    .nav {
+                                        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                                        background-color: #555454;
+                                        height: 10%;
+                                        padding: 20px 36px;
+                                        box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.4);
+                                        margin-bottom: 30px;
+                                    }
+                                    
+                                    .nav--title {
+                                        color: white;
+                                        font-weight: 600;
+                                    }
+
+                                    .api-header{
+                                        margin: 20px;
+                                    }
+                                    
+                                    .api-title{
+                                        font-weight: 700;
+                                        letter-spacing: 3px;
+                                    }
+                                    
+                                    hr.rounded{
+                                        border-top: 8px solid #bbb;
+                                        border-radius: 5px;
+                                        border-color: darkorange;
+                                    }
                                     </style>
                                 </head>
+                                <header>
+                                <nav class="nav">
+                                    <h1 class="nav--title">Stack On The Code</h1>
+                                </nav>
+                                </header>
                                 <body>
-                                    <h1>API Results</h1>
+                                    <h1 class = 'api-title'>API Results</h1>
+                                    <div class="api-header">
+                                    <hr class="rounded">
+                                    </div>
                                     <h2>Similar Questions:</h2>
                                     <ul>
                                 `;
@@ -147,7 +211,7 @@ panel.webview.html = htmlContent;
 
 }
 
-console.log("printing summary array ", summaryArray[0])
+console.log("printing summary array ", summaryArray[0]);
 /*
 const {data, error} = await supabase.from('summaries')
 .insert(
@@ -215,22 +279,23 @@ const insertIntoDB = async (query: string, question: string, answer: string) => 
     }
   )
 if (error) {
-  console.log("insertion error ", error)
+  console.log("insertion error ", error);
 }
-}
+};
 
 const getSummaries = async () => {
   const {data, error} = await supabase.from('summaries')
-  .select('*').filter('user_name', 'eq', identity)
+  .select('*').filter('user_name', 'eq', identity);
 
   if (error){
-    console.log("error in getting summaries")
+    console.log("error in getting summaries");
+    return [];
   }
   else{
-    console.log("printing data ", data)
+    console.log("printing data ", data);
   }
   return data;
-}
+};
 
 const displayHistory = () => {
     let summaries = getSummaries();
@@ -242,19 +307,87 @@ const displayHistory = () => {
         {}
     );
 
-    let htmlContent = `<html>
+    let htmlContent =  `<html>
     <head>
       <title>Stack On The Code</title>
       <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-      <link rel="stylesheet" type="text/css" href="./history.css" />
     </head>
     <body>
+    <style> 
+        html, body {
+        width:100%;
+        height:100%;
+        margin:0;
+        padding:0;
+        }
+        
+        h1 {
+            text-align:center;
+        }
+        
+        h2{
+            text-align: left;
+            margin-left: 40px;
+        }
+        
+        .nav {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #555454;
+            height: 10%;
+            padding: 20px 36px;
+            box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+        
+        .nav--title {
+            color: white;
+            font-weight: 600;
+        }
+        
+        
+        .history-header{
+            margin: 20px;
+        }
+        
+        .history-title{
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+        
+        hr.rounded{
+            border-top: 8px solid #bbb;
+            border-radius: 5px;
+            border-color: darkorange;
+        }
+        
+        .columns > h4{
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        
+        .error{
+            font-family:'Courier New', Courier, monospace;
+        }
+        
+        .container{
+            justify-content: center;
+            max-width:100%;
+        }
+        
+        .col{
+            display: flex;
+            align-items: center; 
+            justify-content: center;
+        }
+  
+    </style>
+
       <header>
         <nav class="nav">
           <h1 class="nav--title">Stack On The Code</h1>
         </nav>
       </header>
+
       <h1 class="history-title">History</h1>
       <div class="history-header">
         <hr class="rounded">
@@ -288,69 +421,37 @@ const displayHistory = () => {
         </div>
         <!--<button onclick="addRow()">Add Row</button> -->
       </div>
-      
-      <script>
-        function addRow() {
-          var container = document.getElementById('error container');
-          var newRow = document.createElement('div');
-          newRow.className = 'row';
-          newRow.innerHTML = \`
-            <div class="col">
-              <h4>New User Prompt</h4>
-            </div>
-            <div class="col">
-              <h4>New Stack Overflow Question</h4>
-            </div>
-            <div class="col">
-              <h4>New Answer</h4>
-            </div>\`;
-          container.appendChild(newRow);
-        }
-      </script>
-    </body>
-    </html>
-    `
+    `;
 
-    //htmlContent += `<h1>TEST</h1>`
-    interface Summary {
-      user_name: string;
-      prompt: string;
-      question: string;
-      answer: string;
+
+    for(const entry of summaries){
+        htmlContent += `<div class="error container"> `;
+        htmlContent += `<div class="row">`;
+        htmlContent += `<div class="prompt col">`;
+        htmlContent += `<p> ${entry.prompt} </p> `;
+        htmlContent += `</div>`; //close prompt col div
+
+        htmlContent += `<div class="question col">`;
+        htmlContent += `<p> ${entry.question} </p> `;
+        htmlContent += `</div>`; //close question col div
+
+        htmlContent += `<div class="answer col">`;
+        htmlContent += `<p> ${entry.answer} </p> `;
+        htmlContent += `</div>`; //close answer col div
+
+        htmlContent += `</div>`; //close row div
+        htmlContent += `</div>`; //close error div
     }
-    summaries.then((data => {
-      if (data !== null) {
-        data.forEach((summary: Summary) => {
-          console.log(summary)
-          htmlContent += `
-          <div class="row">
-            <div class="col">
-              <p>${summary.prompt}</p>
-              </div>
-              <div class="col">
-              <p>${summary.question}</p>
-              </div>
-              <div class="col">
-              <p>${summary.answer}</p>
-              </div>
-              </div>
-              `
-        })
-      panel.webview.html = htmlContent;
-      }
-      else {
-        console.log("No data found")
-      }
-    }))
-
-//panel.webview.html = htmlContent;
-}
+    htmlContent += `</body>`; 
+    htmlContent += `</html>`; 
+    panel.webview.html = htmlContent;
+};
 
 function createLoginWebview() {
   const panel = vscode.window.createWebviewPanel(
     'login', // Identifies the type of the webview. Used internally
     'Login', // Title of the panel displayed to the user
-    vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+    vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
     {
       enableScripts: true
     }
@@ -358,67 +459,155 @@ function createLoginWebview() {
 
   let sampleHtml = 
   
-  `<h1>Login</h1>
-  <form id="loginForm">
+  ` <html>
+  <head>
+      <title>Stack On The Code</title>
+      <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" />
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    </head>
+    <style> 
+    html, body {
+      width:100%;
+      height:100%;
+      margin:0;
+      padding:0;
+  }
+    
+    h1 {
+        text-align:center;
+    }
+    
 
-    <div class="container">
-      <label for="uname"><b>Email</b></label>
-      <input type="text" placeholder="Enter Email" name="uname" required>
+    label{
+        margin: 5px;
+    }
 
-      <label for="psw"><b>Password</b></label>
-      <input type="password" placeholder="Enter Password" name="psw" required>
+    input {
+        margin-bottom: 10px;
+    }
 
-      <button type="submit" id="loginButton">Login</button>
+    button{
+        background-color: orange;
+        color: white;
+        padding: 5px 10px;
+        margin: 8px 0;
+        margin-bottom: 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 20%;
+        
+    }
+
+    .btndiv{
+        display: flex;
+        justify-content: center;
+    }
+    
+    .container{
+        margin-left: 20px;
+        display: flex;
+        flex-direction: column;  
+        justify-content: center;
+    }
+
+    .nav {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #555454;
+        height: 10%;
+        padding: 20px 36px;
+        box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.4);
+        margin-bottom: 30px;
+    }
+    
+    .nav--title {
+        color: white;
+        font-weight: 600;
+    }
+
+    .login-header{
+        margin: 20px;
+    }
+    
+    hr.rounded{
+        border-top: 8px solid #bbb;
+        border-radius: 5px;
+        border-color: darkorange;
+    }
+    </style>
+    <nav class="nav">
+    <h1 class="nav--title">Stack On The Code</h1>
+    </nav>
+    <h1>Welcome to Stack On The Code</h1>
+    <div class="login-header">
+        <hr class="rounded">
     </div>
-  </form>
+    <form id="loginForm">
 
-  <h1>Sign Up</h1>
-  <form id="SignUpForm">
+        <div class="container">
+        <h3> Login </h3>
+        <label for="uname"><b>Email:</b></label>
+        <input type="text" placeholder="Enter Email" name="uname" required>
 
-    <div class="container">
-      <label for="uname2"><b>Email</b></label>
-      <input type="text" placeholder="Enter Email" name="uname2" required>
+        <label for="psw"><b>Password:</b></label>
+        <input type="password" placeholder="Enter Password" name="psw" required>
 
-      <label for="psw2"><b>Password</b></label>
-      <input type="password" placeholder="Enter Password" name="psw2" required>
+        <div class = "btndiv">
+            <button type="submit">Login</button>
+        </div>
+        </div>
+    </form>
 
-      <button type="submit" id="signUpButton">SignUp</button>
-    </div>
-  </form>
+    <form id="SignUpForm">
 
-  <script>
-    const vscode = acquireVsCodeApi();
-    const loginForm = document.getElementById('loginForm');
-    loginForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const formData = new FormData(loginForm);
-      const email = formData.get('uname');
-      const password = formData.get('psw');
-      if (email && password) {
-        vscode.postMessage({
-          command: 'login',
-          email,
-          password
+        <div class="container">
+        <h3> Don't have an account? Sign up here. </h3>
+        <label for="uname2"><b>Email:</b></label>
+        <input type="text" placeholder="Enter Email" name="uname2" required>
+
+        <label for="psw2"><b>Password:</b></label>
+        <input type="password" placeholder="Enter Password" name="psw2" required>
+
+        <div class = "btndiv">
+            <button type="submit">SignUp</button>
+        </div>
+        </div>
+    </form>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(loginForm);
+        const email = formData.get('uname');
+        const password = formData.get('psw');
+        if (email && password) {
+            vscode.postMessage({
+            command: 'login',
+            email,
+            password
+            });
+        }
         });
-      }
-    });
 
-    const signUpForm = document.getElementById('SignUpForm');
-    signUpForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const formData = new FormData(signUpForm);
-      const email = formData.get('uname2');
-      const password = formData.get('psw2');
-      if (event.submitter.id === 'signUpButton' && email && password) {
-        vscode.postMessage({
-          command: 'signUp',
-          email,
-          password
+        const signUpForm = document.getElementById('SignUpForm');
+        signUpForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(signUpForm);
+        const email = formData.get('uname2');
+        const password = formData.get('psw2');
+        if (event.submitter.id === 'signUpButton' && email && password) {
+            vscode.postMessage({
+            command: 'signUp',
+            email,
+            password
+            });
+        }
         });
-      }
-    });
-  </script>
-  `;
+    </script>
+    </html>
+    `;
 
   panel.webview.onDidReceiveMessage(
     async message => {
@@ -469,13 +658,13 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event == 'SIGNED_IN') {
+    if (event === 'SIGNED_IN') {
       console.log("User is signed in");
       hasUserLoggedIn = true;
       identity = await (await supabase.auth.getUser()).data.user?.id;
       console.log("printing identity ", identity)
     }
-    else if (event == 'USER_UPDATED') {
+    else if (event === 'USER_UPDATED') {
       //console.log("User is updated");
     }
   });
@@ -499,7 +688,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(COMMAND_INFO, () => {
             if(infoLine){
-                stackExchangeGet(infoLine, false)
+                stackExchangeGet(infoLine, false);
             }
             else{
                 vscode.window.showErrorMessage('Select text to get more info');
