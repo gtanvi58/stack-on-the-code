@@ -1,26 +1,29 @@
 # Contribution
 
 ### Tanvi Gupta
-Files worked on:
 - StackOverflow API requests
-- VSCode API and integration into extension
-- Presentations
+- VSCode API for getting information from user highlighting
+- Final integration
+- Unit tests
 
 
 ### Rithika Florian Johnson
-Files worked on:
-- Fine-tuned LLM model and LLM API requests
-- Presentations
+- Fine-tuned LLM model
+- LLM API requests
+- Final integration
+- Unit tests
 
 
 ### Vivienne Tam
-Files worked on: history.html, history.css, populateHistory.js, README.md, Contribution.md
-- Frontend/Webview views
-- Presentations
+- Frontend webviews and UI styling
+- Final Integration
+- README and Contributions
+- Unit tests
 
 
 ### Ali Naveed
 Files worked on:
 - User authentication
 - Database setup
-- Presentations
+- Final integration
+- Unit tests
