@@ -14,12 +14,12 @@
   ],
   "contributes": {
     "commands": [
-        {
-            "command": "stack-on-the-code.onButtonClick",
-            "title": "Button Click"
-        }
+      {
+        "command": "stack-on-the-code.onButtonClick",
+        "title": "Button Click"
+      }
     ]
-},
+  },
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -32,12 +32,14 @@
   "devDependencies": {
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
+    "@types/sinon": "^17.0.3",
     "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^7.4.0",
     "@typescript-eslint/parser": "^7.4.0",
     "@vscode/test-cli": "^0.0.8",
     "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.57.0",
+    "sinon": "^17.0.2",
     "typescript": "^5.3.3"
   },
   "dependencies": {
