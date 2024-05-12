@@ -409,43 +409,61 @@ const displayHistory = () => {
         <div class="error container">
           <div class="row">
             <div class="col">
-              <p>example</p>
+              
             </div>
             <div class="col">
-              <p>example</p>
+              
             </div>
             <div class="col">
-              <p>example</p>
+              
             </div>
           </div>
         </div>
         <!--<button onclick="addRow()">Add Row</button> -->
       </div>
     `;
+    interface Summary {
+      user_name: string;
+      prompt: string;
+      question: string;
+      answer: string;
+    }
+   
 
-
-    for(const entry of summaries){
-        htmlContent += `<div class="error container"> `;
+    summaries.then((data => {
+      if (data !== null) {
+        data.forEach((summary: Summary) => {
+          htmlContent += `<div class="error container"> `;
         htmlContent += `<div class="row">`;
         htmlContent += `<div class="prompt col">`;
-        htmlContent += `<p> ${entry.prompt} </p> `;
+        htmlContent += `<p> ${summary.prompt} </p> `;
         htmlContent += `</div>`; //close prompt col div
-
+   
+   
         htmlContent += `<div class="question col">`;
-        htmlContent += `<p> ${entry.question} </p> `;
+        htmlContent += `<p> ${summary.question} </p> `;
         htmlContent += `</div>`; //close question col div
-
+   
+   
         htmlContent += `<div class="answer col">`;
-        htmlContent += `<p> ${entry.answer} </p> `;
+        htmlContent += `<p> ${summary.answer} </p> `;
         htmlContent += `</div>`; //close answer col div
-
+   
+   
         htmlContent += `</div>`; //close row div
         htmlContent += `</div>`; //close error div
-    }
-    htmlContent += `</body>`; 
-    htmlContent += `</html>`; 
+        })
+        htmlContent += `</body>`;
+        htmlContent += `</html>`;
+      panel.webview.html = htmlContent;
+      }
+      else {
+        console.log("No data found")
+      }
+    }))
     panel.webview.html = htmlContent;
-};
+   };
+   
 
 function createLoginWebview() {
   const panel = vscode.window.createWebviewPanel(
