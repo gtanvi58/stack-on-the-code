@@ -19,7 +19,13 @@ In the new window that opens, run command+shift+p -> choose `Developer: Reload W
 
 1. Highlight code that you want information from. For e.g - a dependency name, a React hook etc, or even an entire line of code that has is erroneous.
    
-2. If you are not logged in, only the login action will be available to you. Login if you are opening the extension for the first time in this debug session. Sign up if you do not already have an account. 
+2. If you are not logged in, only the login action will be available to you. Login if you are opening the extension for the first time in this debug session. Sign up if you do not already have an account.
+
+   For login credentials, you can use:
+   email: ali.naveed8002@gmail.com
+   password: test123
+
+   If you wish to sign in, there is a 3 new users per hour limit since we are using a free version of Supabase.
 
 4. After clicking the login or signup button. Click on bulb icon again after highlighting the text and choose the option you want.
 
@@ -29,3 +35,6 @@ In the new window that opens, run command+shift+p -> choose `Developer: Reload W
 
 ### Datasets used by LLM
 We used datasets from CodeXGlue (https://github.com/microsoft/CodeXGLUE) and the LLM we used is DistilBART (https://huggingface.co/sshleifer/distilbart-cnn-12-6).
+
+### Additional notes: 
+Due to difficulties with the VSCode extensions webview API and our time constraints, we opted to not use the React framework. We also are no longer using a layered architectural design. However, we are still using the Publisher-Subscriber model for the webviews.
