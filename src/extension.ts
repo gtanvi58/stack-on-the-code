@@ -31,6 +31,7 @@ const COMMAND_HISTORY = 'stack-on-the-code.onGetHistory';
 let infoLine = '';
 let errorLine = ''
 let diagnostics: vscode.Diagnostic[] = [];
+//debugging, set this to false to make user login
 let hasUserLoggedIn = false;
 let identity: string | undefined = '';
 
@@ -233,6 +234,7 @@ const getSummaries = async () => {
 
 const displayHistory = () => {
     let summaries = getSummaries();
+    //console.log(summaries)
     const panel = vscode.window.createWebviewPanel(
         'history', // Identifies the type of the webview. Used internally
         'History of Past Summaries', // Title of the panel displayed to the user
@@ -284,7 +286,7 @@ const displayHistory = () => {
             </div>
           </div>
         </div>
-        <button onclick="addRow()">Add Row</button>
+        <!--<button onclick="addRow()">Add Row</button> -->
       </div>
       
       <script>
@@ -309,7 +311,39 @@ const displayHistory = () => {
     </html>
     `
 
-panel.webview.html = htmlContent;
+    //htmlContent += `<h1>TEST</h1>`
+    interface Summary {
+      user_name: string;
+      prompt: string;
+      question: string;
+      answer: string;
+    }
+    summaries.then((data => {
+      if (data !== null) {
+        data.forEach((summary: Summary) => {
+          console.log(summary)
+          htmlContent += `
+          <div class="row">
+            <div class="col">
+              <p>${summary.prompt}</p>
+              </div>
+              <div class="col">
+              <p>${summary.question}</p>
+              </div>
+              <div class="col">
+              <p>${summary.answer}</p>
+              </div>
+              </div>
+              `
+        })
+      panel.webview.html = htmlContent;
+      }
+      else {
+        console.log("No data found")
+      }
+    }))
+
+//panel.webview.html = htmlContent;
 }
 
 function createLoginWebview() {
@@ -334,10 +368,11 @@ function createLoginWebview() {
       <label for="psw"><b>Password</b></label>
       <input type="password" placeholder="Enter Password" name="psw" required>
 
-      <button type="submit">Login</button>
+      <button type="submit" id="loginButton">Login</button>
     </div>
   </form>
 
+  <h1>Sign Up</h1>
   <form id="SignUpForm">
 
     <div class="container">
@@ -347,7 +382,7 @@ function createLoginWebview() {
       <label for="psw2"><b>Password</b></label>
       <input type="password" placeholder="Enter Password" name="psw2" required>
 
-      <button type="submit">SignUp</button>
+      <button type="submit" id="signUpButton">SignUp</button>
     </div>
   </form>
 
@@ -374,7 +409,7 @@ function createLoginWebview() {
       const formData = new FormData(signUpForm);
       const email = formData.get('uname2');
       const password = formData.get('psw2');
-      if (email && password) {
+      if (event.submitter.id === 'signUpButton' && email && password) {
         vscode.postMessage({
           command: 'signUp',
           email,
@@ -387,7 +422,7 @@ function createLoginWebview() {
 
   panel.webview.onDidReceiveMessage(
     async message => {
-      //console.log(message)
+      console.log(message)
       switch (message.command) {
         case 'login':
           let email = message.email;
@@ -405,7 +440,7 @@ function createLoginWebview() {
 }
 
 const signUpCommand = async (email: string, password: string) => {
-  //console.log("sign UP function called")
+  console.log("sign UP function called")
   try{
   const {data, error} = await supabase.auth.signUp({
     email: email,
@@ -418,7 +453,7 @@ const signUpCommand = async (email: string, password: string) => {
 }
 
 const loginCommand = async (email: string, password: string) => {
-  //console.log("logging in")
+  console.log("logging in")
   const {data, error} = await supabase.auth.signInWithPassword({
     email: email,
     password: password
