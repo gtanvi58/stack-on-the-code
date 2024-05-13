@@ -2,7 +2,7 @@
 ### Introduction
 StackOnTheCode is a VS Code extension to generate code/error summaries using data from StackOverflow and LLMs. This extension was inspired by our own experiences working on VSCode and finding it tedious to constantly flip back between VSCode and the browser for debugging and StackOverflow searching. StackOnTheCode eliminates the need for web browser searching by allowing you to get StackOverflow answers right in VSCode's webview. Additionally, we use an LLM to summarize the StackOverflow responses to return more concise and useful answers to the user. 
 
-Demo video link: 
+Demo video link: https://drive.google.com/file/d/1idbRwfgIibD4N8Sh3kivwh4F5V5BKt1P/view?usp=sharing
 
 ### Installation Instructions
 
