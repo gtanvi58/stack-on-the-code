@@ -1,0 +1,71 @@
+
+body {
+    margin: 0;
+}
+
+h1 {
+    text-align:center;
+}
+
+h2{
+    text-align: left;
+    margin-left: 40px;
+}
+
+.nav {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #555454;
+    height: 10%;
+    padding: 20px 36px;
+    box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.4);
+    margin-bottom: 30px;
+}
+
+.nav--title {
+    color: white;
+    font-weight: 600;
+}
+
+.nav--items {
+    list-style: none;
+    display: flex;
+    color: white;
+}
+
+.nav--items > li {
+    padding: 10px;
+}
+
+.history-header{
+    margin: 20px;
+}
+
+.history-title{
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+hr.rounded{
+    border-top: 8px solid #bbb;
+    border-radius: 5px;
+    border-color: darkorange;
+}
+
+.columns > h4{
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.error{
+    font-family:'Courier New', Courier, monospace;
+}
+
+.container{
+    justify-content: center;
+    max-width:100%;
+}
+
+.col{
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+}
