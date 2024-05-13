@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-import { COMMAND_INFO, COMMAND_ERROR, COMMAND_HISTORY, COMMAND_LOGIN, stackExchangeGet } from '../extension';
+import { getSummaries, COMMAND_INFO, COMMAND_ERROR, COMMAND_HISTORY, COMMAND_LOGIN, stackExchangeGet } from '../extension';
 
 suite('Command Tests', () => {
     let errorMessageStub: sinon.SinonStub;
@@ -29,4 +29,16 @@ suite('Command Tests', () => {
         const expectedTitle = 'History of Past Summaries';
         assert.equal(panel.title, expectedTitle);
     });
+
+    test ('getSummaries', async () => {
+        const summaries = getSummaries();
+        console.log(typeof summaries)
+        assert(typeof summaries === 'object');
+        summaries.then((data) => {
+            assert(typeof data === 'object');
+            assert(data.length > 0);
+            assert(data[0].prompt !== null);
+            assert(data[0].question !== null);
+        });
+    })
 });

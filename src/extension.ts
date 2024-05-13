@@ -5,7 +5,17 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 const fsPromises = require('fs').promises;
 import {createClient} from '@supabase/supabase-js';
-import { Auth } from '@supabase/ui';
+//import { Auth } from '@supabase/ui';
+
+import * as os from 'os';
+
+let pythonCommand;
+if (os.platform() === 'win32') {
+    pythonCommand = 'py';
+}else{
+    pythonCommand = 'python3';
+}
+
 
 
 const supabaseUrl = 'https://zlenezbwfqcoawbssfed.supabase.co'
@@ -157,7 +167,7 @@ const questions = response.data.items;
                                         if (matchingResponse && count<3) {
                                           questionsArray.push(questionItem.title);
                                           count++;
-                                          const pythonProcess = await spawnSync('python3', [
+                                          const pythonProcess = await spawnSync(pythonCommand, [
                                             scriptPath,
                                             'first_function',
                                             JSON.stringify(matchingResponse),
@@ -258,7 +268,7 @@ if (error) {
 }
 };
 
-const getSummaries = async () => {
+export const getSummaries = async () => {
   const {data, error} = await supabase.from('summaries')
   .select('*').filter('user_name', 'eq', identity);
 
@@ -437,7 +447,7 @@ const displayHistory = () => {
       }
     }))
     panel.webview.html = htmlContent;
-   };
+  };
    
 
 function createLoginWebview() {
@@ -654,6 +664,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (event === 'SIGNED_IN') {
       console.log("User is signed in");
       hasUserLoggedIn = true;
+      vscode.window.showInformationMessage('Logged in, you may use the other commands now.');
       identity = await (await supabase.auth.getUser()).data.user?.id;
       console.log("printing identity ", identity)
     }
